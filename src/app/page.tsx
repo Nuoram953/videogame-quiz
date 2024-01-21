@@ -4,6 +4,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import { getGameById, search } from "./api";
 import { debounce } from "@mui/material/utils";
+import Hint from "./components/hint";
 
 export default function Home() {
   const [suggestion, setSuggestion] = useState([]);
@@ -19,36 +20,32 @@ export default function Home() {
     id: number;
     slug: string;
   } | null>();
+  const [hints, setHints] = useState(0);
 
   useEffect(() => {
     async function init() {
       const data = await getGameById(1942);
-      console.log(data);
-      const game = data[0];
-      setGameToFind({ label: game.name, id: game.id, slug: game.slug });
+      setGameToFind(data[0]);
+      setHints(3);
     }
     init();
   }, []);
 
   useEffect(() => {
-    compareAnswers(searchString);
-  }, [selectedOption]);
+    compareAnswers();
+  }, [selectedOption, hints]);
 
   const debouncedSetter = useMemo(
     () => debounce((value: string) => onChangeInput(value), 500),
     [],
   );
 
-  const compareAnswers = (answer: any) => {
-    if (!answer) {
-      return;
+  const compareAnswers = () => {
+    if (selectedOption && selectedOption?.id == gameToFind?.id) {
+      return setHasFound(true);
     }
 
-    console.log(selectedOption, gameToFind);
-    if (selectedOption?.label == gameToFind?.label) {
-      setHasFound(true);
-    }
-    console.log(hasFound);
+    setHasFound(false);
   };
 
   const onChangeInput = async (value: string) => {
@@ -72,6 +69,9 @@ export default function Home() {
   return (
     <>
       <div className="flex flex-col h-screen justify-center items-center">
+        {Array.from({ length: hints }, (_, index) => (
+          <Hint key={index} name={`test ${index}`} game={gameToFind} />
+        ))}
         {gameToFind && (
           <p>
             game to find: {gameToFind.label}{" "}
