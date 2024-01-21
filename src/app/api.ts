@@ -46,14 +46,15 @@ export async function getToken() {
 
 export async function getGameById(id: number) {
   const url = "https://api.igdb.com/v4/games";
-  const body = `fields name,aggregated_rating,category,created_at,dlcs,expanded_games,expansions,external_games,first_release_date,game_engines,game_localizations,game_modes,genres,hypes,involved_companies,keywords,multiplayer_modes,platforms,player_perspectives,ports,rating,remakes,remasters,similar_games,slug,standalone_expansions,status,storyline,tags,themes,total_rating,updated_at,url,version_parent,version_title,videos,websites;where id=${id}; limit 1;`;
+  const body = `fields slug,name,alternative_names,aggregated_rating,category,created_at,dlcs,expanded_games,expansions,external_games,first_release_date,game_engines,game_localizations,game_modes,genres,hypes,involved_companies,keywords,multiplayer_modes,platforms,player_perspectives,ports,rating,remakes,remasters,similar_games,slug,standalone_expansions,status,storyline,tags,themes,total_rating,updated_at,url,version_parent,version_title,videos,websites;where id=${id}; limit 1;`;
 
   return await caller("POST", url, body);
 }
 
+
 export async function search(searchString: string) {
-  const url = "https://api.igdb.com/v4/search";
-  const body = `fields id, name;search "${searchString}"; limit 50;`;
+  const url = "https://api.igdb.com/v4/games";
+  const body = `fields id, name, slug;search "${searchString}"; where version_parent=null; limit 50;`;
 
   return await caller("POST", url, body);
 }

@@ -8,28 +8,48 @@ import { debounce } from "@mui/material/utils";
 export default function Home() {
   const [suggestion, setSuggestion] = useState([]);
   const [searchString, setSearchString] = useState("");
+  const [hasFound, setHasFound] = useState(false);
   const [selectedOption, setSelectedOption] = useState<{
     label: string;
     id: number;
+    slug: string;
   } | null>();
   const [gameToFind, setGameToFind] = useState<{
     label: string;
     id: number;
+    slug: string;
   } | null>();
 
   useEffect(() => {
     async function init() {
       const data = await getGameById(1942);
+      console.log(data);
       const game = data[0];
-      setGameToFind({ label: game.name, id: game.id });
+      setGameToFind({ label: game.name, id: game.id, slug: game.slug });
     }
     init();
   }, []);
+
+  useEffect(() => {
+    compareAnswers(searchString);
+  }, [selectedOption]);
 
   const debouncedSetter = useMemo(
     () => debounce((value: string) => onChangeInput(value), 500),
     [],
   );
+
+  const compareAnswers = (answer: any) => {
+    if (!answer) {
+      return;
+    }
+
+    console.log(selectedOption, gameToFind);
+    if (selectedOption?.label == gameToFind?.label) {
+      setHasFound(true);
+    }
+    console.log(hasFound);
+  };
 
   const onChangeInput = async (value: string) => {
     setSearchString(value);
@@ -39,6 +59,7 @@ export default function Home() {
       .map((item: any) => ({
         ...item,
         label: item.name,
+        slug: item.slug,
       }))
       .filter(
         (item: any, index: any, array: any) =>
@@ -79,11 +100,18 @@ export default function Home() {
             debouncedSetter(newValue)
           }
           onChange={(event: any, newValue: any | null) => {
-            setSelectedOption(newValue);
+            setSelectedOption({
+              ...selectedOption,
+              label: newValue.label,
+              id: newValue.id,
+              slug: newValue.slug,
+            });
           }}
           onReset={(event: any) => {
-            setSelectedOption(null);
             setSearchString("");
+          }}
+          isOptionEqualToValue={(option, value) => {
+            return option.label == value;
           }}
         />
         {selectedOption && (
@@ -92,6 +120,7 @@ export default function Home() {
             {selectedOption.id != 0 && selectedOption.id}
           </p>
         )}
+        {hasFound && <p>Congratulation! You found the game</p>}
       </div>
     </>
   );
